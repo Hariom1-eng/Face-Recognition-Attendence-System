@@ -1,5 +1,9 @@
 {
   "/page": "app/page.js",
+  "/student/demo-session/page": "app/student/demo-session/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/signin/page": "app/signin/page.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/signup/page": "app/signup/page.js",
+  "/student/registrationform/page": "app/student/registrationform/page.js",
+  "/student/view-attendance/page": "app/student/view-attendance/page.js"
 }

@@ -7,136 +7,190 @@ import tkinter as tk
 from tkinter import *
 
 def subjectchoose(text_to_speech):
+
     def calculate_attendance():
+
         Subject = tx.get()
-        if Subject=="":
-            t='Please enter the subject name.'
-            text_to_speech(t)
-    
-        filenames = glob(
-            f"Attendance\\{Subject}\\{Subject}*.csv"
-        )
-        df = [pd.read_csv(f) for f in filenames]
-        newdf = df[0]
-        for i in range(1, len(df)):
-            newdf = newdf.merge(df[i], how="outer")
-        newdf.fillna(0, inplace=True)
-        newdf["Attendance"] = 0
+
+        if Subject == "":
+            text_to_speech("Please enter the subject name.")
+            return
+
+        filenames = glob(f"Attendance\\{Subject}\\{Subject}*.csv")
+
+        df_list = []
+
+        for file in filenames:
+            df_list.append(pd.read_csv(file))
+
+        newdf = pd.concat(df_list, ignore_index=True)
+
+        newdf = newdf.drop_duplicates(subset=["Enrollment"], keep="first")
+
         for i in range(len(newdf)):
-            newdf["Attendance"].iloc[i] = str(int(round(newdf.iloc[i, 2:-1].mean() * 100)))+'%'
-            #newdf.sort_values(by=['Enrollment'],inplace=True)
+
+            attendance_mean = newdf.iloc[i, 2:-1].mean()
+
+            if pd.isna(attendance_mean):
+                percentage = 0
+            else:
+                percentage = int(round(attendance_mean * 100))
+
+            newdf.loc[i, "Attendance"] = f"{percentage}%"
+
         newdf.to_csv(f"Attendance\\{Subject}\\attendance.csv", index=False)
 
         root = tkinter.Tk()
-        root.title("Attendance of "+Subject)
-        root.configure(background="black")
+        root.title("Attendance of " + Subject)
+        root.geometry("700x400")
+        root.configure(bg="#121212")
+
         cs = f"Attendance\\{Subject}\\attendance.csv"
+
         with open(cs) as file:
+
             reader = csv.reader(file)
+
             r = 0
 
             for col in reader:
+
                 c = 0
+
                 for row in col:
 
                     label = tkinter.Label(
                         root,
-                        width=10,
+                        width=12,
                         height=1,
-                        fg="yellow",
-                        font=("times", 15, " bold "),
-                        bg="black",
+                        fg="white",
+                        font=("Helvetica", 12, "bold"),
+                        bg="#1f1f1f",
                         text=row,
                         relief=tkinter.RIDGE,
+                        bd=2
                     )
-                    label.grid(row=r, column=c)
+
+                    label.grid(row=r, column=c, padx=2, pady=2)
+
                     c += 1
+
                 r += 1
+
         root.mainloop()
-        print(newdf)
+
+
+
+    # ================= WINDOW =================
 
     subject = Tk()
-    # windo.iconbitmap("AMS.ico")
-    subject.title("Subject...")
-    subject.geometry("580x320")
-    subject.resizable(0, 0)
-    subject.configure(background="black")
-    # subject_logo = Image.open("UI_Image/0004.png")
-    # subject_logo = subject_logo.resize((50, 47), Image.ANTIALIAS)
-    # subject_logo1 = ImageTk.PhotoImage(subject_logo)
-    titl = tk.Label(subject, bg="black", relief=RIDGE, bd=10, font=("arial", 30))
-    titl.pack(fill=X)
-    # l1 = tk.Label(subject, image=subject_logo1, bg="black",)
-    # l1.place(x=100, y=10)
-    titl = tk.Label(
-        subject,
-        text="Which Subject of Attendance?",
-        bg="black",
-        fg="green",
-        font=("arial", 25),
+
+    subject.title("View Attendance")
+
+    subject.geometry("620x360")
+
+    subject.resizable(False, False)
+
+    subject.configure(bg="#121212")
+
+
+
+    # ================= HEADER =================
+
+    header = Frame(subject, bg="#0f3460", height=70)
+
+    header.pack(fill=X)
+
+    title = Label(
+        header,
+        text="Select Subject to View Attendance",
+        bg="#0f3460",
+        fg="white",
+        font=("Helvetica", 22, "bold")
     )
-    titl.place(x=100, y=12)
+
+    title.pack(pady=15)
+
+
+
+    # ================= INPUT =================
+
+    main_frame = Frame(subject, bg="#121212")
+
+    main_frame.pack(pady=40)
+
+    sub = Label(
+        main_frame,
+        text="Subject Name",
+        font=("Helvetica", 14, "bold"),
+        bg="#121212",
+        fg="white"
+    )
+
+    sub.grid(row=0, column=0, padx=10, pady=10)
+
+    tx = Entry(
+        main_frame,
+        width=20,
+        font=("Helvetica", 16),
+        bg="#1f1f1f",
+        fg="white",
+        insertbackground="white",
+        bd=3
+    )
+
+    tx.grid(row=0, column=1, padx=10)
+
+
+
+    # ================= BUTTONS =================
+
+    button_frame = Frame(subject, bg="#121212")
+
+    button_frame.pack(pady=30)
+
+
 
     def Attf():
+
         sub = tx.get()
+
         if sub == "":
-            t="Please enter the subject name!!!"
-            text_to_speech(t)
+            text_to_speech("Please enter the subject name!!!")
+
         else:
-            os.startfile(
-            f"Attendance\\{sub}"
-            )
+            os.startfile(f"Attendance\\{sub}")
 
 
-    attf = tk.Button(
-        subject,
-        text="Check Sheets",
-        command=Attf,
-        bd=7,
-        font=("times new roman", 15),
-        bg="black",
-        fg="yellow",
-        height=2,
-        width=10,
-        relief=RIDGE,
-    )
-    attf.place(x=360, y=170)
 
-    sub = tk.Label(
-        subject,
-        text="Enter Subject",
-        width=10,
-        height=2,
-        bg="black",
-        fg="yellow",
-        bd=5,
-        relief=RIDGE,
-        font=("times new roman", 15),
-    )
-    sub.place(x=50, y=100)
-
-    tx = tk.Entry(
-        subject,
-        width=15,
-        bd=5,
-        bg="black",
-        fg="yellow",
-        relief=RIDGE,
-        font=("times", 30, "bold"),
-    )
-    tx.place(x=190, y=100)
-
-    fill_a = tk.Button(
-        subject,
+    view_btn = Button(
+        button_frame,
         text="View Attendance",
         command=calculate_attendance,
-        bd=7,
-        font=("times new roman", 15),
-        bg="black",
-        fg="yellow",
-        height=2,
-        width=12,
-        relief=RIDGE,
+        font=("Helvetica", 14, "bold"),
+        bg="#16213e",
+        fg="white",
+        width=15,
+        bd=3
     )
-    fill_a.place(x=195, y=170)
+
+    view_btn.grid(row=0, column=0, padx=20)
+
+
+
+    sheet_btn = Button(
+        button_frame,
+        text="Check Sheets",
+        command=Attf,
+        font=("Helvetica", 14, "bold"),
+        bg="#e94560",
+        fg="white",
+        width=15,
+        bd=3
+    )
+
+    sheet_btn.grid(row=0, column=1, padx=20)
+
+
+
     subject.mainloop()
